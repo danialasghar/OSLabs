@@ -32,26 +32,27 @@ void pause_shell() {
     getchar();
 }
 
-void processToken(char *t){
-    
-}
-
-void readInput(){
-  
-     char * buff = readline("\n");
-     char command[256];
+void process_input(char *str){
+//    char command[256];
     char* token;
-    strcpy(command,buff);
+//    strcpy(command,buff);
        char delim[1] = " ";
-     token = strtok(command, delim);
+     token = strtok(str, delim);
      
      while(token!=NULL){
          printf("%s\n",token );
          
+         
+         
+         
          token = strtok(NULL,delim);
          
      }
-    
+}
+
+void readInput(){
+    char * buff = readline("\n");
+    process_input(buff);
 }
 
 int main(int argc, const char * argv[]) {
