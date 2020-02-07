@@ -15,10 +15,12 @@
 #include<readline/readline.h>
 #include<readline/history.h>
 
-int exit_flag = 0;
+pid_t parentprocess;
 
 void exit_shell(){
     exit_flag=1;
+    kill(parentprocess,SIGKILL);
+
 }
 
 
@@ -32,6 +34,18 @@ void pause_shell() {
     getchar();
 }
 
+void directory() {
+    system("ls");
+}
+
+void echo(char **tokens, int size){
+    for(int i=1;i<size;i++){
+        printf("%s ",tokens[i]);
+    }
+    printf("\n");
+    exit(0);
+}
+
 void process_tokens(char **tokens, int size) {
 
         if(strcmp(tokens[0],"cd")==0){
@@ -41,13 +55,15 @@ void process_tokens(char **tokens, int size) {
             clr();
             
         } else if (strcmp(tokens[0],"dir")==0) {
-            printf("dir");
+            directory();
             
         }else if (strcmp(tokens[0],"environ")==0) {
             printf("env");
             
         }else if (strcmp(tokens[0],"echo")==0) {
-            printf("echo");
+            char **d ;
+            strcpy(d,tokens);
+            echo(tokens,size);
             
         }else if (strcmp(tokens[0],"help")==0) {
              printf("help");
@@ -87,28 +103,30 @@ void tokenise_input(char *str){
 }
 
 int readInput(){
-    char * buff = readline("\n");
-    if(strlen(buff)==0){
+    char * buff;
+    buff = readline("\n");
+    if(strlen(buff)!=0){
+      if(fork()==0){
+                tokenise_input(buff);
+               exit(0);
+           }
+          
+           free(buff);
         return 1;
     } else {
-         tokenise_input(buff);
+     
         return 0;
     }
    
 }
 
 int main(int argc, const char * argv[]) {
-    while(1 & !exit_flag){
+    parentprocess = getpid();
+    while(1){
+        waitpid(-1, NULL, WNOHANG);
 
-//        if(readInput()) {
-//            continue;
-//        }
-//
-        char *c = malloc(sizeof(c)*100);
-        scanf("%s",c);
-        tokenise_input(c);
-      
-
+        readInput();
+        
 
     }
 //
