@@ -16,18 +16,16 @@
 #include<readline/history.h>
 
 pid_t parentprocess;
+extern char **environ;
 
 void exit_shell(){
-    exit_flag=1;
+    //exit_flag=1;
     kill(parentprocess,SIGKILL);
-
 }
-
 
 void clr() {
   printf("\033[H\033[J");
 }
-
 
 void pause_shell() {
     printf("shell paused press enter to continue");
@@ -46,60 +44,67 @@ void echo(char **tokens, int size){
     exit(0);
 }
 
-void process_tokens(char **tokens, int size) {
+void env() {
+    char *ptr = *environ;
 
-        if(strcmp(tokens[0],"cd")==0){
-            printf("cd");
-            
-        } else if (strcmp(tokens[0],"clr")==0) {
-            clr();
-            
-        } else if (strcmp(tokens[0],"dir")==0) {
-            directory();
-            
-        }else if (strcmp(tokens[0],"environ")==0) {
-            printf("env");
-            
-        }else if (strcmp(tokens[0],"echo")==0) {
-            char **d ;
-            strcpy(d,tokens);
-            echo(tokens,size);
-            
-        }else if (strcmp(tokens[0],"help")==0) {
-             printf("help");
-            
-        }else if (strcmp(tokens[0],"pause")==0) {
-            pause_shell();
-            
-        }else if (strcmp(tokens[0],"quit")==0) {
-            exit_shell();
-            
-        }
-        
-    
-    
-
-
-    
+    for (int i = 1; i < ptr; i++) {
+        printf("%s\n", ptr);
+        ptr = *(environ+i);
+    }
 }
 
-void tokenise_input(char *str){
+void help() {
+    system("more README.md");
+}
+
+void process_tokens(char **tokens, int size) {
+
+    if(strcmp(tokens[0],"cd")==0){
+        printf("cd");
+        
+    } else if (strcmp(tokens[0],"clr")==0) {
+        clr();
+        
+    } else if (strcmp(tokens[0],"dir")==0) {
+        directory();
+        
+    }else if (strcmp(tokens[0],"environ")==0) {
+        env();
+        
+    }else if (strcmp(tokens[0],"echo")==0) {
+        char **d ;
+        strcpy(d,tokens);
+        echo(tokens,size);
+        
+    }else if (strcmp(tokens[0],"help")==0) {
+            printf("help");
+        
+    }else if (strcmp(tokens[0],"pause")==0) {
+        pause_shell();
+        
+    }else if (strcmp(tokens[0],"quit")==0) {
+        exit_shell();
+        
+    }    
+}
+
+void tokenize_input(char *str){
     char* token;
     char delim[1] = " ";
-    char ** tokenisedStr;
-     token = strtok(str, delim);
+    char ** tokenizedStr;
+    token = strtok(str, delim);
     
     int i=0;
      
-     while(token!=NULL){
+    while(token!=NULL){
        
-         tokenisedStr[i] = token;
+         tokenizedStr[i] = token;
          i++;
          token = strtok(NULL,delim);
          
      }
     //i was incremented an extra time when for loop exited
-    process_tokens(tokenisedStr,i--);
+    process_tokens(tokenizedStr,i--);
 }
 
 int readInput(){
@@ -107,7 +112,7 @@ int readInput(){
     buff = readline("\n");
     if(strlen(buff)!=0){
       if(fork()==0){
-                tokenise_input(buff);
+                tokenize_input(buff);
                exit(0);
            }
           
@@ -116,8 +121,7 @@ int readInput(){
     } else {
      
         return 0;
-    }
-   
+    }  
 }
 
 int main(int argc, const char * argv[]) {
