@@ -77,7 +77,7 @@ void process_tokens(char **tokens, int size) {
         echo(tokens,size);
         
     }else if (strcmp(tokens[0],"help")==0) {
-            printf("help");
+            help();
         
     }else if (strcmp(tokens[0],"pause")==0) {
         pause_shell();
