@@ -1,0 +1,11 @@
+void exit_shell();
+void clr() ;
+void pause_shell();
+void directory(char **tokens);
+void echo(char **tokens, int size);
+void env();
+void help();
+void change_directory(char **directory);
+void process_tokens(char *tokens[], int size);
+void tokenize_input(char *str);
+int readInput();
