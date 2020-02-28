@@ -83,17 +83,22 @@ void change_directory(char **directory){
     }
 }
 
+//in-built function to open input file and redirect stdin to the file
 void redirect_input(char **inFileName) {
 
   int fd_in;
+  //Open file check for errors opening
   if((fd_in = open(inFileName, O_RDONLY, 0)) < 0) {
     printf("Error opening input file.");
     exit(0);
   }
+  //Copy stdin to file
   dup2(fd_in, STDIN_FILENO);
+  //Close the file descriptor for the redirect file, because that file is under the stdin descriptor now
   close(fd_in);
 }
 
+//in-built function to open output file and redirect stdout to the file
 void redirect_output(char **outFileName) {
 
   int fd_out;
@@ -101,7 +106,9 @@ void redirect_output(char **outFileName) {
     printf("Error opening output file.");
     exit(0);
   }
+  //Copy stdout to file
   dup2(fd_out, STDOUT_FILENO);
+  //Close the file descriptor for the redirect file, because that file is under the stdout descriptor now
   close(fd_out);
 }
 
@@ -158,6 +165,7 @@ void tokenize_input(char *str){
 
      }
 
+     //Check of there is < or > in the tokenized user command
      for(int i = 0; i < size-2; i++) {
        if(strcmp(tokens[i], "<") == 0) {
          tokens[i]=NULL;
@@ -169,6 +177,7 @@ void tokenize_input(char *str){
          strcpy(outFileName, tokens[i+1]);
          out=2;
        }
+       //Invoke function to redirect accordingly
        if(in) {
          redirect_input(inFileName);
        }
