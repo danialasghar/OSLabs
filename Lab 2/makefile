@@ -1,2 +1,2 @@
-minishell: shell.h shell.c
-	gcc -Wall shell.h shell.c -o shell
+myshell: main.c myshell.h
+	gcc -o myshell main.c -lreadline
