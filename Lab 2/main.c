@@ -18,6 +18,8 @@
 
 pid_t parentprocess;
 extern char **environ;
+void tokenize_input(char *str);
+//void readFromFile(char** tokens);
 
 //in-built command to exit the shell, kills parent process
 void exit_shell(){
@@ -132,18 +134,36 @@ void process_tokens(char *tokens[], int size) {
     }else if (strcmp(tokens[0],"quit")==0) {
         exit_shell();
     //If command is anything different from the above, print the message and do nothing otherwise
-    } else {
+    }else {
         tokens[size++] = NULL;
-        if(fork()==0){
+         int pid = fork();
+        if(pid==0){
              execvp(tokens[0],tokens);
              perror("execv");
         }
     }
-    
+}
+
+void readFromFile(char* tokens){
+   printf("%s file ",tokens);
+    FILE* fp;
+    char line[1024];
+    fp = fopen(tokens, "r+");
+    while (fgets(line, sizeof(line), fp)){
+        int pid = fork();
+        if(pid==0){
+    printf("%s \n", line);
+        tokenize_input(line);
+        }else{
+            wait(NULL);
+        }
+   }
+    fclose(fp);
 }
 
 //Utility function to tokenize user input on white space
 void tokenize_input(char *str){
+//     printf("%s test test \n", str);
     char* token;
     //delimiter is white space
     char delim[1] = " ";
@@ -163,7 +183,7 @@ void tokenize_input(char *str){
     
     //Once tokenized, call the core function to process the command
     //Use size-- because it was incremented an extra time in while loop above
-    process_tokens(tokens,size--);  
+    process_tokens(tokens,size--);
 
 }
 
@@ -192,11 +212,18 @@ int main(int argc, const char * argv[]) {
     strcat(path, "/myShell");
     setenv("shell", path, 1);
     parentprocess = getpid();
-
-    //Read input from user indefinitely, until user quite the shell explicitly
-    while(1){
-        readInput();
+    
+    if(argc>1) {
+         
+         readFromFile(argv[1]);
+    } else {
+        //Read input from user indefinitely, until user quite the shell explicitly
+           while(1){
+               readInput();
+           }
     }
+
+   
 
     return 0;
 }
