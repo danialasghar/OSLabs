@@ -94,13 +94,15 @@ void change_directory(char **directory){
 void process_tokens(char *tokens[], int size) {
     //If command ends with ampersand, run command in the background
     if(strcmp(tokens[size-1], "&")==0) {
-
-        printf("Background process %d running %s.\n", getpid(), tokens[0]);
+        int pid = fork();
+        if(pid==0){
+            setpgid(0,0);
+            printf("Background process %d running %s.\n", getpid(), tokens[0]);
+        } else {
+            wait(NULL);
+        }
     }
-
-    //If command is cd, change directory
     if(strcmp(tokens[0],"cd")==0){
-
         change_directory(tokens);
     //If command is clr, clear the screen
     } else if (strcmp(tokens[0],"clr")==0) {
@@ -108,14 +110,10 @@ void process_tokens(char *tokens[], int size) {
     //If command is dir, list the contents of the current directory
     } else if (strcmp(tokens[0],"dir")==0) {
         directory(tokens);
-    //If command is environ, list the environment variables
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
-    //If command is echo, print back to stdout the message following echo
     }else if (strcmp(tokens[0],"echo")==0) {
-
-       echo(tokens,size);
-    //If command is help, print manual in README to stdout
+        echo(tokens,size);
     }else if (strcmp(tokens[0],"help")==0) {
         help();
     //If command is pause, pause the shell
@@ -126,7 +124,11 @@ void process_tokens(char *tokens[], int size) {
         exit_shell();
     //If command is anything different from the above, print the message and do nothing otherwise
     } else {
-        printf("Unsupported command, use help to display the manual\n");
+        tokens[size++] = NULL;
+        if(fork()==0){
+             execvp(tokens[0],tokens);
+             perror("execv");
+        }
     }
     
 }
@@ -136,7 +138,7 @@ void tokenize_input(char *str){
     char* token;
     //delimiter is white space
     char delim[1] = " ";
-    char *tokens[3];
+    char *tokens[5];
     token = strtok(str, delim);
     
     int size=0;
@@ -149,19 +151,15 @@ void tokenize_input(char *str){
         token = strtok(NULL,delim);
 
      }
-    
-    //Once tokenized, call the core function to process the command
-    //Use size-- because it was incremented an extra time in while loop above
-    process_tokens(tokens,size--);  
+    process_tokens(tokens,size);
+   
 }
 
 //Read user input from stdin, pass it to tokenizing function
 int readInput(){
     char * buff;
     char path[1024];
-    //Display current working directory in the command line
-    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell $ "));
-    //Pass input to tokenizing function
+    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell "));
     if(strlen(buff)!=0){
         tokenize_input(buff);
         free(buff);
