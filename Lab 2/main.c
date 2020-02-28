@@ -48,7 +48,7 @@ void directory(char **tokens) {
 
 void echo(char **tokens, int size){
     for(int i=1;i<size;i++){
-        fputsf("%s ",tokens[i]);
+        printf("%s ",tokens[i]);
     }
     printf("\n");
     exit(0);
