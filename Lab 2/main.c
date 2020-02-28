@@ -59,33 +59,37 @@ void help() {
 
 void process_tokens(char **tokens, int size) {
 
+    if(strcmp(tokens[size-1], "&")==0) {
+      setpgid(0, 0);
+      printf("Background process %d running %s.\n", getpid(), tokens[0]);
+    }
+
     if(strcmp(tokens[0],"cd")==0){
         printf("cd");
-        
+
     } else if (strcmp(tokens[0],"clr")==0) {
         clr();
-        
+
     } else if (strcmp(tokens[0],"dir")==0) {
         directory();
-        
+
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
-        
+
     }else if (strcmp(tokens[0],"echo")==0) {
         char **d ;
         strcpy(d,tokens);
         echo(tokens,size);
-        
+
     }else if (strcmp(tokens[0],"help")==0) {
             help();
-        
+
     }else if (strcmp(tokens[0],"pause")==0) {
         pause_shell();
-        
+
     }else if (strcmp(tokens[0],"quit")==0) {
         exit_shell();
-        
-    }    
+    }
 }
 
 void tokenize_input(char *str){
@@ -93,15 +97,15 @@ void tokenize_input(char *str){
     char delim[1] = " ";
     char ** tokenizedStr;
     token = strtok(str, delim);
-    
+
     int i=0;
-     
+
     while(token!=NULL){
-       
+
          tokenizedStr[i] = token;
          i++;
          token = strtok(NULL,delim);
-         
+
      }
     //i was incremented an extra time when for loop exited
     process_tokens(tokenizedStr,i--);
@@ -112,28 +116,22 @@ int readInput(){
     buff = readline("\n");
     if(strlen(buff)!=0){
       if(fork()==0){
-                tokenize_input(buff);
-               exit(0);
-           }
-          
-           free(buff);
-        return 1;
+        tokenize_input(buff);
+        exit(0);
+      }
+      free(buff);
+      return 1;
     } else {
-     
         return 0;
-    }  
+    }
 }
 
 int main(int argc, const char * argv[]) {
     parentprocess = getpid();
     while(1){
         waitpid(-1, NULL, WNOHANG);
-
         readInput();
-        
-
     }
-//
     printf("sadfasdf");
     return 0;
 }
