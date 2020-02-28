@@ -140,7 +140,7 @@ void tokenize_input(char *str){
 int readInput(){
     char * buff;
     char path[1024];
-    buff = readline(strcat(getcwd(path, sizeof(path))," "));
+    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell $ "));
     if(strlen(buff)!=0){
             tokenize_input(buff);
            free(buff);
@@ -154,7 +154,7 @@ int readInput(){
 int main(int argc, const char * argv[]) {
     char path[1024];
     getcwd(path, sizeof(path));
-    strcat(path, "/myshell");
+    strcat(path, "/myShell");
     setenv("shell", path, 1);
     parentprocess = getpid();
 
