@@ -9,6 +9,7 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include<fcntl.h>
 #include<unistd.h>
 #include<sys/types.h>
 #include <dirent.h>
@@ -19,24 +20,20 @@
 pid_t parentprocess;
 extern char **environ;
 
-//in-built command to exit the shell, kills parent process
 void exit_shell(){
     //exit_flag=1;
     kill(parentprocess,SIGKILL);
 }
 
-//in-built command to clear the screen
 void clr() {
   printf("\033[H\033[J");
 }
 
-//in-built command to pause the shell
 void pause_shell() {
-    printf("Shell paused, press enter to continue.");
+    printf("shell paused press enter to continue");
     getchar();
 }
 
-//in-built command to list current directory contents
 void directory(char **tokens) {
     DIR *directory;
     struct dirent *tempdir;
@@ -50,15 +47,13 @@ void directory(char **tokens) {
     }
 }
 
-//in-built command to echo message back to stdout
 void echo(char **tokens, int size){
     for(int i=1;i<size;i++){
-       printf("%s ",tokens[i]);
+        printf("%s ",tokens[i]);
     }
     printf("\n");
 }
 
-//in-built command to print environment variables to stout
 void env() {
     char *ptr = *environ;
 
@@ -68,15 +63,12 @@ void env() {
     }
 }
 
-//in-built command to print manual to stdout
 void help() {
     system("more README.md");
 }
 
-//in-built command to change current working directory to the one specified in argument
 void change_directory(char **directory){
-    
-    //If no directory specified, obtain current working directory from system
+
     if(directory[1]==NULL){
         system("pwd");
     }
@@ -87,101 +79,130 @@ void change_directory(char **directory){
         chdir(directory[1]);
         setenv("pwd",directory[1],1);
         system("pwd");
+
     }
 }
 
-//Function to process user supplied tokens to corresponding in-built commands
+void redirect_input(char **inFileName) {
+
+  int fd_in;
+  if((fd_in = open(inFileName, O_RDONLY, 0)) < 0) {
+    printf("Error opening input file.");
+    exit(0);
+  }
+  dup2(fd_in, STDIN_FILENO);
+  close(fd_in);
+}
+
+void redirect_output(char **outFileName) {
+
+  int fd_out;
+  if((fd_out = creat(outFileName, 0644)) < 0) {
+    printf("Error opening output file.");
+    exit(0);
+  }
+  dup2(fd_out, STDOUT_FILENO);
+  close(fd_out);
+}
+
 void process_tokens(char *tokens[], int size) {
-    //If command ends with ampersand, run command in the background
     if(strcmp(tokens[size-1], "&")==0) {
-        int pid = fork();
-        if(pid==0){
-            setpgid(0,0);
-            printf("Background process %d running %s.\n", getpid(), tokens[0]);
-        } else {
-            wait(NULL);
-        }
+
+      printf("Background process %d running %s.\n", getpid(), tokens[0]);
     }
+
     if(strcmp(tokens[0],"cd")==0){
+
         change_directory(tokens);
-    //If command is clr, clear the screen
     } else if (strcmp(tokens[0],"clr")==0) {
         clr();
-    //If command is dir, list the contents of the current directory
     } else if (strcmp(tokens[0],"dir")==0) {
         directory(tokens);
+
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
+
     }else if (strcmp(tokens[0],"echo")==0) {
+
         echo(tokens,size);
+
     }else if (strcmp(tokens[0],"help")==0) {
-        help();
-    //If command is pause, pause the shell
+            help();
+
     }else if (strcmp(tokens[0],"pause")==0) {
         pause_shell();
-    //If command is quit, quit the shell
+
     }else if (strcmp(tokens[0],"quit")==0) {
         exit_shell();
-    //If command is anything different from the above, print the message and do nothing otherwise
+
     } else {
-        tokens[size++] = NULL;
-        if(fork()==0){
-             execvp(tokens[0],tokens);
-             perror("execv");
-        }
+        printf("Unsupported command, use help to display the manual\n");
     }
-    
 }
 
-//Utility function to tokenize user input on white space
 void tokenize_input(char *str){
     char* token;
-    //delimiter is white space
     char delim[1] = " ";
-    char *tokens[5];
+    char *tokens[3];
     token = strtok(str, delim);
-    
+    int in=0, out=0;
+    char inFileName[50], outFileName[50];
+
     int size=0;
-    
-    //Process tokens word-by-word, separated by white space, add each to tokens array
+
     while(token!=NULL){
-       
-        tokens[size] = token;
-        size++;
-        token = strtok(NULL,delim);
+
+         tokens[size] = token;
+         size++;
+         token = strtok(NULL,delim);
 
      }
-    process_tokens(tokens,size);
-   
+
+     for(int i = 0; i < size-2; i++) {
+       if(strcmp(tokens[i], "<") == 0) {
+         tokens[i]=NULL;
+         strcpy(inFileName, tokens[i+1]);
+         in=2;
+       }
+       if(strcmp(tokens[i], ">") == 0) {
+         tokens[i]=NULL;
+         strcpy(outFileName, tokens[i+1]);
+         out=2;
+       }
+       if(in) {
+         redirect_input(inFileName);
+       }
+       if(out) {
+         redirect_output(outFileName);
+       }
+     }
+     process_tokens(tokens,size--);
+
 }
 
-//Read user input from stdin, pass it to tokenizing function
 int readInput(){
     char * buff;
     char path[1024];
-    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell "));
+    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell $ "));
     if(strlen(buff)!=0){
-        tokenize_input(buff);
-        free(buff);
+            tokenize_input(buff);
+           free(buff);
         return 1;
     } else {
         return 0;
     }
 }
 
-//Driver function
+
 int main(int argc, const char * argv[]) {
     char path[1024];
-    //Get current working directory from system settings
     getcwd(path, sizeof(path));
     strcat(path, "/myShell");
     setenv("shell", path, 1);
     parentprocess = getpid();
 
-    //Read input from user indefinitely, until user quite the shell explicitly
-    while(1){
+        while(1){
         readInput();
     }
-
     return 0;
 }
