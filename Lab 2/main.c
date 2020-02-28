@@ -84,25 +84,24 @@ void change_directory(char **directory){
 
 void process_tokens(char *tokens[], int size) {
     if(strcmp(tokens[size-1], "&")==0) {
-
-      printf("Background process %d running %s.\n", getpid(), tokens[0]);
+        int pid = fork();
+        if(pid==0){
+            setpgid(0,0);
+            printf("Background process %d running %s.\n", getpid(), tokens[0]);
+        } else {
+            wait(NULL);
+        }
     }
-
     if(strcmp(tokens[0],"cd")==0){
-
         change_directory(tokens);
     } else if (strcmp(tokens[0],"clr")==0) {
         clr();
     } else if (strcmp(tokens[0],"dir")==0) {
         directory(tokens);
-
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
-
     }else if (strcmp(tokens[0],"echo")==0) {
-
         echo(tokens,size);
-
     }else if (strcmp(tokens[0],"help")==0) {
             help();
 
@@ -113,7 +112,11 @@ void process_tokens(char *tokens[], int size) {
         exit_shell();
 
     } else {
-        printf("Unsupported command, use help to display the manual\n");
+        tokens[size++] = NULL;
+        if(fork()==0){
+             execvp(tokens[0],tokens);
+             perror("execv");
+        }
     }
     
 }
@@ -121,7 +124,7 @@ void process_tokens(char *tokens[], int size) {
 void tokenize_input(char *str){
     char* token;
     char delim[1] = " ";
-    char *tokens[3];
+    char *tokens[5];
     token = strtok(str, delim);
     
     int size=0;
@@ -133,14 +136,14 @@ void tokenize_input(char *str){
          token = strtok(NULL,delim);
          
      }
-    process_tokens(tokens,size--);
+    process_tokens(tokens,size);
    
 }
 
 int readInput(){
     char * buff;
     char path[1024];
-    buff = readline(strcat(getcwd(path, sizeof(path))," "));
+    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell "));
     if(strlen(buff)!=0){
             tokenize_input(buff);
            free(buff);
