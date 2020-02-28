@@ -140,7 +140,7 @@ void tokenize_input(char *str){
 int readInput(){
     char * buff;
     char path[1024];
-    buff = readline(getcwd(path, sizeof(path)));
+    buff = readline(strcat(getcwd(path, sizeof(path))," "));
     if(strlen(buff)!=0){
             tokenize_input(buff);
            free(buff);
