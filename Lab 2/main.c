@@ -51,8 +51,6 @@ void echo(char **tokens, int size){
         printf("%s ",tokens[i]);
     }
     printf("\n");
-    exit(0);
-    
 }
 
 void env() {
@@ -69,7 +67,7 @@ void help() {
 }
 
 void change_directory(char **directory){
-     printf(directory[1]);
+    
     if(directory[1]==NULL){
         system("pwd");
     }
@@ -80,28 +78,29 @@ void change_directory(char **directory){
         chdir(directory[1]);
         setenv("pwd",directory[1],1);
         system("pwd");
+
     }
 }
 
-void process_tokens(char **tokens, int size) {
+void process_tokens(char *tokens[], int size) {
     if(strcmp(tokens[size-1], "&")==0) {
-      setpgid(0, 0);
+
       printf("Background process %d running %s.\n", getpid(), tokens[0]);
     }
 
     if(strcmp(tokens[0],"cd")==0){
+
         change_directory(tokens);
     } else if (strcmp(tokens[0],"clr")==0) {
         clr();
     } else if (strcmp(tokens[0],"dir")==0) {
         directory(tokens);
-        
+
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
 
     }else if (strcmp(tokens[0],"echo")==0) {
-        char **d ;
-        strcpy(d,tokens);
+
         echo(tokens,size);
 
     }else if (strcmp(tokens[0],"help")==0) {
@@ -112,14 +111,23 @@ void process_tokens(char **tokens, int size) {
 
     }else if (strcmp(tokens[0],"quit")==0) {
         exit_shell();
+<<<<<<< HEAD
     }
+=======
+
+    } else {
+        printf("Unsupported command, use help to display the manual\n");
+    }
+    
+>>>>>>> 1cd3aa00233abe12df7f1fb24043e9750a78ff80
 }
 
 void tokenize_input(char *str){
     char* token;
     char delim[1] = " ";
-    char ** tokenizedStr;
+    char *tokens[3];
     token = strtok(str, delim);
+<<<<<<< HEAD
 
     int i=0;
 
@@ -127,25 +135,39 @@ void tokenize_input(char *str){
 
          tokenizedStr[i] = token;
          i++;
+=======
+    
+    int size=0;
+     
+    while(token!=NULL){
+       
+         tokens[size] = token;
+         size++;
+>>>>>>> 1cd3aa00233abe12df7f1fb24043e9750a78ff80
          token = strtok(NULL,delim);
 
      }
-    //i was incremented an extra time when for loop exited
-    process_tokens(tokenizedStr,i--);
+    process_tokens(tokens,size--);
+   
 }
 
 int readInput(){
     char * buff;
     char path[1024];
-//    printf("%s",);
-    buff = readline(getcwd(path, sizeof(path)));
+    buff = readline(strcat(getcwd(path, sizeof(path)),"/myShell $ "));
     if(strlen(buff)!=0){
+<<<<<<< HEAD
       if(fork()==0){
         tokenize_input(buff);
         exit(0);
       }
       free(buff);
       return 1;
+=======
+            tokenize_input(buff);
+           free(buff);
+        return 1;
+>>>>>>> 1cd3aa00233abe12df7f1fb24043e9750a78ff80
     } else {
         return 0;
     }
@@ -155,14 +177,12 @@ int readInput(){
 int main(int argc, const char * argv[]) {
     char path[1024];
     getcwd(path, sizeof(path));
-    strcat(path, "/myshell");
+    strcat(path, "/myShell");
     setenv("shell", path, 1);
     parentprocess = getpid();
 
         while(1){
         readInput();
     }
-
-    printf("sadfasdf");
     return 0;
 }
