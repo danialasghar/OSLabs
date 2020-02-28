@@ -51,8 +51,6 @@ void echo(char **tokens, int size){
         printf("%s ",tokens[i]);
     }
     printf("\n");
-    exit(0);
-    
 }
 
 void env() {
@@ -69,7 +67,7 @@ void help() {
 }
 
 void change_directory(char **directory){
-     printf(directory[1]);
+    
     if(directory[1]==NULL){
         system("pwd");
     }
@@ -80,76 +78,74 @@ void change_directory(char **directory){
         chdir(directory[1]);
         setenv("pwd",directory[1],1);
         system("pwd");
+
     }
 }
 
-void process_tokens(char **tokens, int size) {
+void process_tokens(char *tokens[], int size) {
     if(strcmp(tokens[size-1], "&")==0) {
-      setpgid(0, 0);
+
       printf("Background process %d running %s.\n", getpid(), tokens[0]);
     }
 
     if(strcmp(tokens[0],"cd")==0){
+
         change_directory(tokens);
     } else if (strcmp(tokens[0],"clr")==0) {
         clr();
     } else if (strcmp(tokens[0],"dir")==0) {
         directory(tokens);
-        
+
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
-        
+
     }else if (strcmp(tokens[0],"echo")==0) {
-        char **d ;
-        strcpy(d,tokens);
+
         echo(tokens,size);
-        
+
     }else if (strcmp(tokens[0],"help")==0) {
             help();
-        
+
     }else if (strcmp(tokens[0],"pause")==0) {
         pause_shell();
-        
+
     }else if (strcmp(tokens[0],"quit")==0) {
         exit_shell();
-        
-    }    
+
+    } else {
+        printf("Unsupported command, use help to display the manual\n");
+    }
+    
 }
 
 void tokenize_input(char *str){
     char* token;
     char delim[1] = " ";
-    char ** tokenizedStr;
+    char *tokens[3];
     token = strtok(str, delim);
     
-    int i=0;
+    int size=0;
      
     while(token!=NULL){
        
-         tokenizedStr[i] = token;
-         i++;
+         tokens[size] = token;
+         size++;
          token = strtok(NULL,delim);
          
      }
-    //i was incremented an extra time when for loop exited
-    process_tokens(tokenizedStr,i--);
+    process_tokens(tokens,size--);
+   
 }
 
 int readInput(){
     char * buff;
     char path[1024];
-//    printf("%s",);
     buff = readline(getcwd(path, sizeof(path)));
     if(strlen(buff)!=0){
-      if(fork()==0){
-                tokenize_input(buff);
-               exit(0);
-           }
-          
+            tokenize_input(buff);
            free(buff);
         return 1;
     } else {
-     
         return 0;
     }  
 }
@@ -165,7 +161,5 @@ int main(int argc, const char * argv[]) {
         while(1){
         readInput();
     }
-
-    printf("sadfasdf");
     return 0;
 }
