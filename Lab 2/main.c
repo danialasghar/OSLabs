@@ -76,6 +76,7 @@ void help() {
 //in-built command to change current working directory to the one specified in argument
 void change_directory(char **directory){
     
+    //If no directory specified, obtain current working directory from system
     if(directory[1]==NULL){
         system("pwd");
     }
@@ -133,12 +134,14 @@ void process_tokens(char *tokens[], int size) {
 //Utility function to tokenize user input on white space
 void tokenize_input(char *str){
     char* token;
+    //delimiter is white space
     char delim[1] = " ";
     char *tokens[3];
     token = strtok(str, delim);
     
     int size=0;
-     
+    
+    //Process tokens word-by-word, separated by white space, add each to tokens array
     while(token!=NULL){
        
         tokens[size] = token;
@@ -147,7 +150,8 @@ void tokenize_input(char *str){
 
      }
     
-    //Once tokenized call the core function to process the command
+    //Once tokenized, call the core function to process the command
+    //Use size-- because it was incremented an extra time in while loop above
     process_tokens(tokens,size--);  
 }
 
