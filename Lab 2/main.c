@@ -11,6 +11,7 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<sys/types.h>
+#include <dirent.h>
 #include<sys/wait.h>
 #include<readline/readline.h>
 #include<readline/history.h>
@@ -32,16 +33,26 @@ void pause_shell() {
     getchar();
 }
 
-void directory() {
-    system("ls");
+void directory(char **tokens) {
+    DIR *directory;
+    struct dirent *tempdir;
+    directory = opendir(tokens[1]);
+    if(directory){
+        while((tempdir = readdir(directory)) != NULL)
+        {
+          printf("%s\n", tempdir -> d_name);
+        }
+        closedir(directory);
+    }
 }
 
 void echo(char **tokens, int size){
     for(int i=1;i<size;i++){
-        printf("%s ",tokens[i]);
+        fputsf("%s ",tokens[i]);
     }
     printf("\n");
     exit(0);
+    
 }
 
 void env() {
@@ -57,16 +68,33 @@ void help() {
     system("more README.md");
 }
 
+void change_directory(char **directory){
+     printf(directory[1]);
+    if(directory[1]==NULL){
+        system("pwd");
+    }
+    else if (chdir(directory[1]) == -1){
+        printf("%s: no such directory\n", directory[1]);
+    }
+    else{
+        chdir(directory[1]);
+        setenv("pwd",directory[1],1);
+        system("pwd");
+    }
+}
+
 void process_tokens(char **tokens, int size) {
+    if(strcmp(tokens[size-1], "&")==0) {
+      setpgid(0, 0);
+      printf("Background process %d running %s.\n", getpid(), tokens[0]);
+    }
 
     if(strcmp(tokens[0],"cd")==0){
-        printf("cd");
-        
+        change_directory(tokens);
     } else if (strcmp(tokens[0],"clr")==0) {
         clr();
-        
     } else if (strcmp(tokens[0],"dir")==0) {
-        directory();
+        directory(tokens);
         
     }else if (strcmp(tokens[0],"environ")==0) {
         env();
@@ -109,7 +137,9 @@ void tokenize_input(char *str){
 
 int readInput(){
     char * buff;
-    buff = readline("\n");
+    char path[1024];
+//    printf("%s",);
+    buff = readline(getcwd(path, sizeof(path)));
     if(strlen(buff)!=0){
       if(fork()==0){
                 tokenize_input(buff);
@@ -124,16 +154,18 @@ int readInput(){
     }  
 }
 
+
 int main(int argc, const char * argv[]) {
+    char path[1024];
+    getcwd(path, sizeof(path));
+    strcat(path, "/myshell");
+    setenv("shell", path, 1);
     parentprocess = getpid();
-    while(1){
-        waitpid(-1, NULL, WNOHANG);
 
+        while(1){
         readInput();
-        
-
     }
-//
+
     printf("sadfasdf");
     return 0;
 }
