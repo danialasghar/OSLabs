@@ -63,8 +63,10 @@ bool request_res(int n_customer, int request[]){
         tempAllocation[n_customer][i] += request[i];
         tempNeed[n_customer][i] = tempMaximum[n_customer][i]-tempAllocation[n_customer][i];
     }
+    bool willBeSafe = is_Safe(tempAvailable,tempNeed,tempAllocation);
     
-    if(is_Safe(tempAvailable,tempNeed,tempAllocation)==true){
+    if(willBeSafe==true){
+        printf("thread %d system will be safe with request\n",n_customer);
         for(int i =0;i<NUM_RESOURCES;i++){
             available[i] -= request[i];
             allocation[n_customer][i] += request[i];
@@ -80,13 +82,13 @@ bool request_res(int n_customer, int request[]){
                 canDealloc = false;
             }
             res[i] = allocation[n_customer][i];
-               
+            
         }
         if(canDealloc==true){
             if(release_res(n_customer,res)==true){
-                printf("successfully dealloced");
+                //                printf("successfully dealloced");
             } else{
-                printf("error in dealloced");
+                //                printf("error in dealloced");
             }
         }
         pthread_mutex_unlock(&lock);
@@ -94,6 +96,7 @@ bool request_res(int n_customer, int request[]){
         return true;
         
     } else {
+        printf("thread %d system will not be safe with request\n",n_customer);
         pthread_mutex_unlock(&lock);
         return false;
     }
@@ -105,7 +108,7 @@ bool request_res(int n_customer, int request[]){
 }
 
 bool release_res(int n_customer, int release[]){
-//    pthread_mutex_lock(&lock);
+    //    pthread_mutex_lock(&lock);
     int tempAvailable[NUM_RESOURCES];
     
     int tempMaximum[NUM_CUSTOMERS][NUM_RESOURCES];
@@ -134,17 +137,21 @@ bool release_res(int n_customer, int release[]){
         tempNeed[n_customer][i] = tempMaximum[n_customer][i]-tempAllocation[n_customer][i];
     }
     
-    if(is_Safe(tempAvailable,tempNeed,tempAllocation)==true){
+    bool willBeSafe = is_Safe(tempAvailable,tempNeed,tempAllocation);
+    
+    if(willBeSafe==true){
+        printf("thread %d system released resources %d,%d,%d\n",n_customer,release[0],release[1],release[2]);
         for(int i =0;i<NUM_RESOURCES;i++){
             available[i] += release[i];
             allocation[n_customer][i] -= release[i];
             need[n_customer][i] = maximum[n_customer][i]-allocation[n_customer][i];
         }
-//        pthread_mutex_unlock(&lock);
+        //        pthread_mutex_unlock(&lock);
         return true;
         
     } else {
-//        pthread_mutex_unlock(&lock);
+        printf("thread %d system unable to release resources %d,%d,%d\n",n_customer,release[0],release[1],release[2]);
+        //        pthread_mutex_unlock(&lock);
         return false;
     }
 }
@@ -202,15 +209,17 @@ bool is_Safe(int tempAvalible[],int tempNeed[NUM_CUSTOMERS][NUM_RESOURCES],int t
 
 void* handleReq(void* s) {
     CustomerData *params =  (CustomerData*)s;
-//    for(int j =0;j<NUM_RESOURCES;j++){
-//
-//        printf("request %d \n",params->request[j]);
-//    }
+    //    for(int j =0;j<NUM_RESOURCES;j++){
+    //
+    //        printf("request %d \n",params->request[j]);
+    //    }
+    
+    printf("Thread no %d requested %d,%d,%d resources\n",params->custNo,params->request[0],params->request[1],params->request[2]);
     
     if(request_res(params->custNo,params->request)==true){
-        printf("success cust no %d\n",params->custNo);
+        printf("Request successful for thread %d\n",params->custNo);
     } else {
-           printf("fail cust no %d\n",params->custNo);
+        printf("Request unsuccessful for thread %d\n",params->custNo);
     }
     
 }
@@ -251,18 +260,16 @@ int main(int argc, char *argv[]) {
         
     }
     
-    int request1[3] = {1,0,2};
-
-    
     pthread_t tid_customer[NUM_CUSTOMERS];
-    int r[3] = {1,0,2};
+    int r[3] = {1,2,2};
     for(int i =0;i<NUM_CUSTOMERS;i++){
-
+        
+        
         
         CustomerData *data = (CustomerData *) malloc(sizeof(CustomerData));
         data->custNo = i;
         for(int j =0;j<NUM_RESOURCES;j++){
-          
+            
             data->request[j] = r[j];
         }
         
