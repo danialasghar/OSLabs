@@ -74,7 +74,7 @@ int findFreeMemoryIndex(int memSize,int realTime){
 
 void allocateMemory(int fromIndex, int size) {
     int indexToReturn = 0;
-    printf("aloccationg from index %d\n",fromIndex);
+//    printf("aloccationg from index %d\n",fromIndex);
     for(int i=fromIndex;i<fromIndex+size;i++){
         // if(avail_mem[i]==0){
         //     indexToReturn = i;
@@ -88,7 +88,7 @@ void allocateMemory(int fromIndex, int size) {
 
 void freeMemory(int fromIndex, int size) {
     int indexToReturn = 0;
-    printf("free from index %d\n",fromIndex);
+//    printf("free from index %d\n",fromIndex);
     for(int i=fromIndex;i<fromIndex+size;i++){
         // if(avail_mem[i]==0){
         //     indexToReturn = i;
@@ -129,7 +129,7 @@ void printFreeMemory(){
         }
         
     }
-    printf("\nfree memory = %d\n",count);
+//    printf("\nfree memory = %d\n",count);
 }
 
 void printProc(struct proc item){
@@ -152,7 +152,7 @@ void executeRealTimeProcess(struct proc realTimeItem,int runTime){
         sleep(runTime);
         kill(pid,SIGINT);
         waitpid(realTimeItem.pid, &status, WUNTRACED);
-        printf("done\n");
+//        printf("done\n");
     }
 }
 
@@ -171,7 +171,7 @@ void executeProcess(struct proc *realTimeItem,int runTime){
         execvp(args[0],args);
         
     } else {
-        printf("child pid = %d\n",pid);
+//        printf("child pid = %d\n",pid);
         realTimeItem->pid =pid;
         sleep(runTime);
         if(realTimeItem->processorTime!=0){
@@ -187,7 +187,7 @@ void executeProcess(struct proc *realTimeItem,int runTime){
         
         
         
-        printf("done\n");
+//        printf("done\n");
     }
 }
 
@@ -257,27 +257,27 @@ int checkResources (struct proc *realTimeItem) {
 }
 
 void allocateResources(struct proc *realTimeItem){
-    printf("\n+++++++++++ allocating resources +++++++++\n");
-    printf("available BEFORE ALLOC printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
+//    printf("\n+++++++++++ allocating resources +++++++++\n");
+//    printf("available BEFORE ALLOC printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
     PRINTERS -= realTimeItem->printers;
     SCANNERS -= realTimeItem->scanners;
     MODEMS -= realTimeItem->modems;
     CD_DRIVES -= realTimeItem->cds;
-     printf("available AFTER ALLOC printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
-    
-        printf("\n+++++++++++++++++++++++++++++++++++++++++\n");
+//     printf("available AFTER ALLOC printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
+//
+//        printf("\n+++++++++++++++++++++++++++++++++++++++++\n");
 }
 
 void deallocateResources(struct proc *realTimeItem){
     
-    printf("\n-----------de allocating resources ---------------\n");
-  printf("available BEFORE DEALLOOCOCOCO printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
+//    printf("\n-----------de allocating resources ---------------\n");
+//  printf("available BEFORE DEALLOOCOCOCO printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
     PRINTERS += realTimeItem->printers;
     SCANNERS += realTimeItem->scanners;
     MODEMS += realTimeItem->modems;
     CD_DRIVES += realTimeItem->cds;
-     printf("available AFTER DEALLOOCOCOCO printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
-      printf("\n---------------------------------------------\n");
+//     printf("available AFTER DEALLOOCOCOCO printers %d , scanners %d, modems %d ,cd %d\n",PRINTERS,SCANNERS,MODEMS,CD_DRIVES);
+//      printf("\n---------------------------------------------\n");
  
 }
 
@@ -334,19 +334,19 @@ int main(void) {
         a.address =0;
         i =0;
         if(a.priority == 0){
-            printf("added real time\n");
+//            printf("added real time\n");
             push(realTime,a);
         }
         if(a.priority == 1){
-            printf("added P1\n");
+//            printf("added P1\n");
             push(priorityQueue1,a);
         }
         if(a.priority == 2){
-            printf("added P2\n");
+//            printf("added P2\n");
             push(priorityQueue2,a);
         }
         if(a.priority == 3){
-            printf("added P3\n");
+//            printf("added P3\n");
             push(priorityQueue3,a);
         }
         
@@ -384,7 +384,7 @@ int main(void) {
             
             runExistingProcess(priorityQueue1Item);
             if(priorityQueue1Item->processorTime!=0){
-                printf("\npushed to queue 2 new proc\n");
+//                printf("\npushed to queue 2 new proc\n");
                 push(priorityQueue2,*priorityQueue1Item);
             } else {
                 deallocateResources(priorityQueue1Item);
@@ -399,7 +399,7 @@ int main(void) {
             printProc(*priorityQueue1Item);
             executeProcess(priorityQueue1Item,1);
             if(priorityQueue1Item->processorTime!=0){
-                printf("\npushed to queue 2 new proc\n");
+//                printf("\npushed to queue 2 new proc\n");
                 push(priorityQueue2,*priorityQueue1Item);
             } else {
                 freeMemory(priorityQueue1Item->address,memSize);
@@ -408,7 +408,7 @@ int main(void) {
             
             
         } else {
-            printf("\npushed to queue 2\n");
+//            printf("\npushed to queue 2\n");
             push(priorityQueue2,*priorityQueue1Item);
         }
         priorityQueue1Item = pop(priorityQueue1);
@@ -422,13 +422,13 @@ int main(void) {
         
         int memSize =priorityQueue1Item->memory;
         int startingIndex = findFreeMemoryIndex(memSize,0);
-        printf("Starting Index %d \n", priorityQueue1Item->pid);
+//        printf("Starting Index %d \n", priorityQueue1Item->pid);
         if(priorityQueue1Item->pid != -1){
-            printf("running exisiting\n");
+//            printf("running exisiting\n");
             runExistingProcess(priorityQueue1Item);
             
             if(priorityQueue1Item->processorTime!=0){
-                printf("\npushed to queue 3 new proc\n");
+//                printf("\npushed to queue 3 new proc\n");
                 push(priorityQueue3,*priorityQueue1Item);
             } else {
                 freeMemory(priorityQueue1Item->address,memSize);
@@ -441,7 +441,7 @@ int main(void) {
             printProc(*priorityQueue1Item);
             executeProcess(priorityQueue1Item,1);
             if(priorityQueue1Item->processorTime!=0){
-                printf("\npushed to queue 3 new proc\n");
+//                printf("\npushed to queue 3 new proc\n");
                 push(priorityQueue3,*priorityQueue1Item);
             } else {
                 freeMemory(priorityQueue1Item->address,memSize);
@@ -450,12 +450,12 @@ int main(void) {
             
             
         } else {
-            printf("\npushed to queue 3\n");
+//            printf("\npushed to queue 3\n");
             push(priorityQueue3,*priorityQueue1Item);
         }
         priorityQueue1Item = pop(priorityQueue2);
     }
-    printf("\ndone ququeueueue2\n");
+//    printf("\ndone ququeueueue2\n");
     //-----------------------------------Q3---------------------------------------
     priorityQueue1Item = pop(priorityQueue3);
     
@@ -464,7 +464,7 @@ int main(void) {
         int memSize =priorityQueue1Item->memory;
         int startingIndex = findFreeMemoryIndex(memSize,0);
         if(priorityQueue1Item->pid != -1){
-            printf("running exisiting\n");
+//            printf("running exisiting\n");
             runExistingProcess(priorityQueue1Item);
             if(priorityQueue1Item->processorTime!=0){
                 push(priorityQueue3,*priorityQueue1Item);
@@ -474,7 +474,7 @@ int main(void) {
             }
         } else if(startingIndex!=-1 && priorityQueue1Item->pid ==-1&& checkResources(priorityQueue1Item)==1 ){
             allocateResources(priorityQueue1Item);
-            printf("\n started new procees\n");
+//            printf("\n started new procees\n");
             allocateMemory(startingIndex,memSize);
             priorityQueue1Item->address = startingIndex;
             printProc(*priorityQueue1Item);
@@ -488,14 +488,14 @@ int main(void) {
             
             
         } else {
-            printf("\nReadded to q3\n");
+//            printf("\nReadded to q3\n");
             push(priorityQueue3,*priorityQueue1Item);
         }
         priorityQueue1Item = pop(priorityQueue3);
     }
     
     
-    printf("\ndone ququeueueue33333\n");
+//    printf("\ndone ququeueueue33333\n");
     
     
 }
