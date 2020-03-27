@@ -86,9 +86,10 @@ bool request_res(int n_customer, int request[]){
         }
         if(canDealloc==true){
             if(release_res(n_customer,res)==true){
-                //                printf("successfully dealloced");
+                       printf("thread %d system released resources %d,%d,%d\n",n_customer,res[0],res[1],res[2]);
             } else{
-                //                printf("error in dealloced");
+                 printf("thread %d system unable to release resources %d,%d,%d\n",n_customer,res[0],res[1],res[2]);
+
             }
         }
         pthread_mutex_unlock(&lock);
@@ -108,7 +109,6 @@ bool request_res(int n_customer, int request[]){
 }
 
 bool release_res(int n_customer, int release[]){
-    //    pthread_mutex_lock(&lock);
     int tempAvailable[NUM_RESOURCES];
     
     int tempMaximum[NUM_CUSTOMERS][NUM_RESOURCES];
@@ -140,18 +140,14 @@ bool release_res(int n_customer, int release[]){
     bool willBeSafe = is_Safe(tempAvailable,tempNeed,tempAllocation);
     
     if(willBeSafe==true){
-        printf("thread %d system released resources %d,%d,%d\n",n_customer,release[0],release[1],release[2]);
         for(int i =0;i<NUM_RESOURCES;i++){
             available[i] += release[i];
             allocation[n_customer][i] -= release[i];
             need[n_customer][i] = maximum[n_customer][i]-allocation[n_customer][i];
         }
-        //        pthread_mutex_unlock(&lock);
         return true;
         
     } else {
-        printf("thread %d system unable to release resources %d,%d,%d\n",n_customer,release[0],release[1],release[2]);
-        //        pthread_mutex_unlock(&lock);
         return false;
     }
 }
@@ -171,13 +167,11 @@ bool is_Safe(int tempAvalible[],int tempNeed[NUM_CUSTOMERS][NUM_RESOURCES],int t
             
             for(int j =0;j<NUM_RESOURCES;j++){
                 if(finish[i]==false && tempNeed[i][j]>tempAvalible[j]){
-                    //                     printf("customer %d cannnnott finish\n",i);
                     canFinish = false;
                     break;
                 }
             }
             if(canFinish==true){
-                //                printf("customer %d can finish\n",i);
                 notFinishedCount = 0;
                 finishedCount++;
                 finish[i] = true;
@@ -209,11 +203,6 @@ bool is_Safe(int tempAvalible[],int tempNeed[NUM_CUSTOMERS][NUM_RESOURCES],int t
 
 void* handleReq(void* s) {
     CustomerData *params =  (CustomerData*)s;
-    //    for(int j =0;j<NUM_RESOURCES;j++){
-    //
-    //        printf("request %d \n",params->request[j]);
-    //    }
-    
     printf("Thread no %d requested %d,%d,%d resources\n",params->custNo,params->request[0],params->request[1],params->request[2]);
     
     if(request_res(params->custNo,params->request)==true){
@@ -225,15 +214,11 @@ void* handleReq(void* s) {
 }
 
 int main(int argc, char *argv[]) {
-    
-    
+
     for(int i = 1; i<argc;i++){
         available[i-1] =atoi(argv[i]);
     }
-    
-    
-    
-    int   maximum1[NUM_CUSTOMERS][NUM_RESOURCES] ={{7,5,3},
+    int maximum1[NUM_CUSTOMERS][NUM_RESOURCES] ={{7,5,3},
         {3,2,2},
         {9,0,2},
         {2,2,2},
@@ -250,29 +235,21 @@ int main(int argc, char *argv[]) {
         {0,0,2}};
     for(int i =0;i<NUM_CUSTOMERS;i++){
         for(int j =0;j<NUM_RESOURCES;j++){
-            
-            maximum[i][j] = maximum1[i][j];
-            allocation[i][j] = allocation1[i][j];
-            need[i][j] = need1[i][j];
-            
-            
+            maximum[i][j] =  (rand() % 9) + 6;
+            allocation[i][j] = (rand() % 3) + 1;
+            need[i][j] = maximum[i][j]-allocation[i][j];
         }
-        
     }
     
     pthread_t tid_customer[NUM_CUSTOMERS];
-    int r[3] = {1,2,2};
     for(int i =0;i<NUM_CUSTOMERS;i++){
-        
-        
-        
         CustomerData *data = (CustomerData *) malloc(sizeof(CustomerData));
         data->custNo = i;
+        int r[3] = {(rand() % 4) ,(rand() % 4) ,(rand() % 4) };
         for(int j =0;j<NUM_RESOURCES;j++){
             
             data->request[j] = r[j];
         }
-        
         pthread_create(&tid_customer[i], NULL, handleReq, (void *)data);
     }
     
